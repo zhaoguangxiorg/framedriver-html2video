@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>驭帧 · 视频分享</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "Noto Sans SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+      background: linear-gradient(160deg, #0d1b2a 0%, #1b2838 100%);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px 16px;
+    }
+    .share-page {
+      width: 100%;
+      max-width: 860px;
+      text-align: center;
+    }
+    .brand { font-size: 18px; letter-spacing: 1px; color: #9fb3c8; }
+    .brand strong { color: #fff; font-size: 22px; }
+    .slogan {
+      margin: 10px 0 28px;
+      font-size: 16px;
+      color: #7d93ab;
+    }
+    .video-wrap {
+      display: none;
+      width: 100%;
+      margin-bottom: 24px;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+    }
+    .video-wrap.show { display: block; }
+    .video-wrap video {
+      display: block;
+      width: 100%;
+      max-height: 72vh;
+      background: #000;
+    }
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      align-items: stretch;
+      margin-top: 8px;
+    }
+    .btn-main {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 15px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 17px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.12s, opacity 0.12s;
+      user-select: none;
+    }
+    .btn-main:active { transform: scale(0.98); }
+    .btn-watch { background: #2563eb; color: #fff; }
+    .btn-watch:hover { opacity: 0.9; }
+    .btn-download { background: #1f2937; color: #fff; border: 1px solid #374151; }
+    .btn-download:hover { opacity: 0.9; }
+    .empty {
+      padding: 60px 20px;
+      color: #8b9bb0;
+      font-size: 16px;
+    }
+    .footer { margin-top: 40px; font-size: 12px; color: #4b5b6e; }
+
+    @media (min-width: 600px) {
+      .actions { flex-direction: row; justify-content: center; }
+      .btn-main { min-width: 220px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="share-page">
+    <div class="brand">驭帧 <strong>FrameDriver</strong></div>
+    <div class="slogan">让每一帧知识，都尽在掌控</div>
+
+    <div class="video-wrap" id="videoWrap">
+      <video id="shareVideo" controls playsinline webkit-playsinline preload="metadata"></video>
+    </div>
+
+    <div class="actions" id="actions">
+      <button class="btn-main btn-watch" id="watchBtn">▶ 点击观看视频</button>
+      <a class="btn-main btn-download" id="downloadLink" href="#" download>⬇ 下载视频</a>
+    </div>
+
+    <div class="empty" id="shareEmpty" hidden>该分享不存在或已失效</div>
+    <div class="footer">驭帧 · FrameDriver</div>
+  </div>
+
+  <script>
+    (function () {
+      var code = window.location.pathname.replace(/^\/s\//, "").replace(/\/+$/, "");
+      var videoWrap = document.getElementById("videoWrap");
+      var watchBtn = document.getElementById("watchBtn");
+      var downloadLink = document.getElementById("downloadLink");
+      var emptyEl = document.getElementById("shareEmpty");
+
+      function showNotFound() {
+        document.getElementById("actions").hidden = true;
+        emptyEl.hidden = false;
+      }
+
+      if (!code) { showNotFound(); return; }
+
+      fetch("/api/share/" + encodeURIComponent(code))
+        .then(function (r) {
+          if (!r.ok) throw new Error("not found");
+          return r.json();
+        })
+        .then(function (data) {
+          var video = document.getElementById("shareVideo");
+          video.src = data.video_url + "?t=" + Date.now();
+          downloadLink.href = data.download_url;
+          watchBtn.addEventListener("click", function () {
+            videoWrap.classList.add("show");
+            video.play();
+            // 全屏播放（手机上原生全屏）
+            if (video.requestFullscreen) {
+              video.requestFullscreen().catch(function () {});
+            } else if (video.webkitEnterFullscreen) {
+              video.webkitEnterFullscreen();
+            }
+          });
+        })
+        .catch(function () { showNotFound(); });
+    })();
+  </script>
+</body>
+</html>

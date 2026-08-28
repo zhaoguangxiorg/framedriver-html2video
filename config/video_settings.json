@@ -1,0 +1,21 @@
+{
+  "aspect_ratio": "16:9",
+  "resolution": "1920x1080",
+  "fps": 30,
+  "video_effect": "none",
+  "fade_in_ms": 0,
+  "fade_out_ms": 0,
+  "transition": "none",
+  "transition_duration": 0.5,
+  "device_scale_factor": 2.0,
+  "enable_subtitles": true,
+  "subtitle_mode": "sentence",
+  "subtitle_font": "Noto Sans SC",
+  "subtitle_font_file": "",
+  "subtitle_font_size": 24,
+  "subtitle_color": "white",
+  "subtitle_outline_color": "black",
+  "subtitle_outline_width": 1,
+  "subtitle_position": "bottom",
+  "subtitle_margin": 50
+}

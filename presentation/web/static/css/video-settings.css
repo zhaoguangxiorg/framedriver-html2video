@@ -1,0 +1,295 @@
+/* 视频设置样式 */
+#tab3 h3 { margin-bottom: 16px; }
+.video-form {
+  max-width: 600px;
+  background: #16213e;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #2a2a4e;
+}
+.form-group { margin-bottom: 24px; }
+.form-label { display: block; margin-bottom: 8px; color: #e8e8e8; font-weight: 600; font-size: 15px; }
+.video-form input[type="text"] {
+  width: 100%;
+  padding: 8px 12px;
+  background: #1a1a2e;
+  border: 1px solid #2a2a4e;
+  color: #fff;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+}
+.video-form input[type="text"]:focus { outline: none; border-color: #0f3460; }
+.ratio-options {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.ratio-options label { color: #fff; cursor: pointer; display: flex; align-items: center; gap: 4px; position: relative; padding-left: 20px; }
+.ratio-options input[type="radio"] { position: absolute; left: 0; top: 50%; transform: translateY(-50%); margin: 0; }
+.ratio-options input:disabled { cursor: not-allowed; opacity: 0.3; }
+.ratio-options input:disabled:checked { opacity: 0; }
+.ratio-options label:has(input:disabled:checked)::before {
+  content: "✓";
+  position: absolute;
+  left: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #e74c3c;
+  font-size: 16px;
+  font-weight: bold;
+}
+.ratio-options label:has(input:disabled:checked) { color: #e74c3c; font-weight: bold; }
+.voice-options {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.voice-options label { color: #fff; cursor: pointer; }
+.form-actions { text-align: right; margin-top: 20px; }
+.video-progress-area { margin-top: 20px; max-width: 600px; }
+.video-result { margin-top: 12px; padding: 12px; background: #1a4a8a; border-radius: 6px; }
+.video-result .btn { margin-left: 12px; }
+
+/* 表单 label 内弱化提示（如语音人设后的内部通道说明） */
+.form-label-hint {
+  color: #8a8a9e;
+  font-size: 12px;
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+/* 通用免责声明入口（弱化样式，位于一键生成按钮旁） */
+.video-declare-link {
+  margin-right: 12px;
+  color: #8a8a9e;
+  font-size: 12.5px;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s;
+}
+.video-declare-link:hover { color: #fff; }
+
+/* 字幕/生成警告提示（弱化样式） */
+.video-warnings {
+  margin: 8px 0;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 200, 60, 0.4);
+  border-radius: 8px;
+  background: rgba(255, 200, 60, 0.08);
+  color: #b8860b;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.video-warning-item + .video-warning-item {
+  margin-top: 4px;
+}
+
+/* 字幕选项行（启用字幕 + 字体颜色 + 预览） */
+.subtitle-options {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.subtitle-color-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #8a8a9e;
+}
+.subtitle-color-field input[type="color"] {
+  width: 26px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+}
+.subtitle-color-field.subtitle-color-disabled input[type="color"] {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+/* 字幕颜色预览：浅色底模拟 PPT 背景，实时显示所选字色 */
+.subtitle-color-preview {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 4px;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  font-size: 13px;
+  color: #ffffff;
+  line-height: 1.5;
+  user-select: none;
+}
+
+/* 分享视频弹窗 */
+#shareModal { z-index: 2100; }  /* 高于历史合成弹窗，避免被遮挡 */
+.share-hint {
+  margin-top: 8px;
+  color: #8a8a9e;
+  font-size: 12px;
+  line-height: 1.6;
+}
+/* 通用提示/确认弹窗：层级最高，确保不被任何弹窗遮挡 */
+#dialogModal { z-index: 9999; }
+.share-result { margin-top: 14px; }
+.share-link-wrap {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.share-link-wrap .modal-input { flex: 1; }
+
+/* ===== 高级弹窗：选段合成（全选栏 / 勾选框 / 历史合成弹窗） ===== */
+
+/* 高级弹窗网格：弹性撑满剩余空间并滚动（保持与原来一致的布局） */
+#advancedGrid {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+}
+
+/* 全选栏（位于幻灯片网格上方，紧凑一行） */
+.advanced-select-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 40%;
+  max-width: 40%;
+  margin: 0 auto;
+  padding: 2px 4px 0;
+  font-size: 13px;
+  color: #b8c2d8;
+}
+.advanced-select-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+  color: #e8e8e8;
+  font-weight: 600;
+}
+.advanced-select-all input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: #27ae60;
+  cursor: pointer;
+}
+.advanced-select-count {
+  color: #8a8a9e;
+  font-size: 12px;
+}
+
+/* 高级弹窗内卡片操作栏：允许换行，避免按钮被挤压变扁 */
+#advancedGrid .slide-card-actions {
+  flex-wrap: wrap;
+}
+#advancedGrid .slide-card-actions .btn {
+  flex-shrink: 0;
+}
+
+/* 幻灯片标题前的勾选框（内联展示，不挤占操作栏按钮） */
+.clip-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-right: 8px;
+  color: #8a8a9e;
+  font-size: 12px;
+  cursor: pointer;
+  user-select: none;
+  vertical-align: middle;
+}
+.clip-checkbox input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: #27ae60;
+  cursor: pointer;
+  margin: 0;
+}
+/* 视频按钮组：允许换行，不压缩按钮 */
+.video-actions-right {
+  flex-wrap: wrap;
+}
+.video-actions-right .video-btn {
+  flex-shrink: 0;
+}
+
+/* 高级弹窗底部按钮栏：与幻灯片卡片同宽（40%）对齐，
+   「合成视频」靠左、「查看历史合成」靠右 */
+#advancedModal .advanced-footer {
+  width: 40%;
+  max-width: 40%;
+  justify-content: space-between;
+}
+
+/* 查看历史合成按钮（高级弹窗底部右侧） */
+.btn-history {
+  background: #2a2a4e;
+  border-color: #3a3a6e;
+  color: #e8e8e8;
+}
+.btn-history:hover { background: #3a3a6e; }
+
+/* 历史合成弹窗：列表区（可滚动） */
+.clip-history-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+.video-clips-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.video-clips-table th {
+  text-align: left;
+  padding: 8px 10px;
+  color: #8a8a9e;
+  font-weight: 600;
+  border-bottom: 1px solid #2a2a4e;
+  background: #1a1a2e;
+}
+.video-clips-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #232345;
+  vertical-align: middle;
+}
+.video-clips-table tr:hover td { background: #1d1d38; }
+.clip-src-cell .clip-src-name {
+  color: #e8e8e8;
+  font-weight: 600;
+}
+.clip-src-cell .clip-src-time {
+  color: #8a8a9e;
+  font-size: 11.5px;
+  margin-top: 2px;
+}
+.clip-ops-cell {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.video-clips-empty {
+  color: #8a8a9e;
+  font-size: 12.5px;
+  padding: 12px 2px;
+}
+
+/* 片段操作按钮配色 */
+.video-btn-share {
+  background: #1f3a6e;
+  border-color: #2a4a8a;
+  color: #cfe0ff;
+}
+.video-btn-share:hover { background: #2a4a8a; }
+.video-btn-delete {
+  background: #3a1f2e;
+  border-color: #6e2a3a;
+  color: #ffcfd8;
+}
+.video-btn-delete:hover { background: #6e2a3a; }

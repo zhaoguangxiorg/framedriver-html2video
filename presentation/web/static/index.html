@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>驭帧(FrameDriver)</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/sidebar.css" />
+  <link rel="stylesheet" href="/css/chat.css" />
+  <link rel="stylesheet" href="/css/tabs.css" />
+  <link rel="stylesheet" href="/css/video-settings.css" />
+  <link rel="stylesheet" href="/css/settings.css" />
+  <link rel="stylesheet" href="/css/progress.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- 左侧：会话列表 -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2 id="brandLogo" title="返回首页">驭帧(FrameDriver)</h2>
+      </div>
+      <button class="btn btn-primary new-session-btn" id="newSessionBtn">+ 新建会话</button>
+      <div class="session-list" id="sessionList"></div>
+    </aside>
+
+    <!-- 右侧：主内容区 -->
+    <main class="main">
+      <!-- 关于/设置按钮：悬浮右上角，首页/主界面均可见 -->
+      <button class="settings-btn about-btn" id="aboutBtn" title="关于">ℹ️</button>
+      <button class="settings-btn" id="settingsBtn" title="设置">⚙</button>
+
+      <!-- 首页：未选中会话时显示 -->
+      <div class="home-page" id="homePage">
+        <div class="home-slogan">驭帧(FrameDriver)·驭帧让每一帧知识，都尽在掌控</div>
+        <button class="btn btn-primary home-new-btn" id="homeNewSessionBtn">＋ 新建会话</button>
+      </div>
+
+      <div class="tab-bar" id="tabBar">
+        <button class="tab tab-active" data-tab="1">① 内容</button>
+        <button class="tab" data-tab="2">② PPT</button>
+        <button class="tab" data-tab="3">③ 视频</button>
+      </div>
+
+      <div class="tab-content">
+        <!-- 选项卡1：内容创建 -->
+        <section class="tab-pane tab-pane-active" id="tab1">
+          <div class="chat-container" id="chatContainer">
+            <div class="empty-hint" id="chatEmpty">新建会话后即可开始对话</div>
+          </div>
+          <div class="chat-input-area">
+            <textarea class="chat-input" id="chatInput" placeholder="输入消息... (Enter 发送, Shift+Enter 换行)" rows="2"></textarea>
+            <div class="chat-input-toolbar">
+              <select class="model-selector" id="contentModelSelector"></select>
+              <button class="btn btn-primary" id="chatSendBtn">发送</button>
+            </div>
+          </div>
+          <div class="progress-bar-wrap" id="contentProgress" hidden>
+            <div class="progress-bar"><div class="progress-bar-fill" id="contentProgressFill"></div></div>
+            <div class="progress-step" id="contentProgressStep"></div>
+          </div>
+        </section>
+
+        <!-- 选项卡2：PPT 生成 -->
+        <section class="tab-pane" id="tab2">
+          <div class="chat-container" id="pptChatContainer">
+            <div class="empty-hint">在下方输入框中发送消息，生成的幻灯片会显示在此处</div>
+          </div>
+          <!-- 浮动按钮：查看全部幻灯片 -->
+          <button class="gallery-btn" id="galleryBtn" title="查看全部幻灯片" hidden>PPT</button>
+          <div class="chat-input-area">
+            <textarea class="chat-input" id="pptInput" placeholder="输入消息... (Enter 发送, Shift+Enter 换行)" rows="2"></textarea>
+            <div class="chat-input-toolbar">
+              <select class="model-selector" id="pptModelSelector"></select>
+              <button class="btn btn-primary" id="pptSendBtn">发送</button>
+            </div>
+          </div>
+          <div class="progress-bar-wrap" id="pptProgress" hidden>
+            <div class="progress-bar"><div class="progress-bar-fill" id="pptProgressFill"></div></div>
+            <div class="progress-step" id="pptProgressStep"></div>
+          </div>
+        </section>
+
+        <!-- 选项卡3：视频设置 -->
+        <section class="tab-pane" id="tab3">
+          <h3>🎬 视频设置</h3>
+          <form id="videoForm" class="video-form">
+            <div class="form-group">
+              <label class="form-label">📐 视频比例</label>
+              <div class="ratio-options">
+                <label><input type="radio" name="aspect_ratio" value="16:9" checked /> 16:9</label>
+                <label><input type="radio" name="aspect_ratio" value="9:16" /> 9:16</label>
+                <label><input type="radio" name="aspect_ratio" value="4:3" /> 4:3</label>
+                <label><input type="radio" name="aspect_ratio" value="1:1" /> 1:1</label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">🖥️ 分辨率</label>
+              <input type="text" name="resolution" placeholder="如 1920x1080，留空使用比例默认值" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">🎙️ 语音人设 <span class="form-label-hint">（默认内置 edge-tts 语音合成通道）</span></label>
+              <div class="voice-options" id="voicePersonaOptions">
+                <span class="loading-hint">加载中...</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">📝 字幕 <span class="form-label-hint">（未配置字体时不可用）</span></label>
+              <div class="subtitle-options">
+                <label><input type="checkbox" name="enable_subtitles" /> 启用字幕</label>
+                <label class="subtitle-color-field" id="subtitleColorField">
+                  <span>字体颜色</span>
+                  <input type="color" id="subtitleColorInput" value="#ffffff" />
+                </label>
+                <span class="subtitle-color-preview" id="subtitleColorPreview">示例字幕文字</span>
+              </div>
+            </div>
+            <div class="form-actions">
+              <span class="video-declare-link" id="videoDeclareLink" title="查看第三方服务及使用免责声明">免责声明❓</span>
+              <button type="submit" class="btn btn-primary" id="generateVideoBtn">🚀 一键生成视频</button>
+              <button type="button" class="btn" id="advancedGenerateBtn">⚙ 高级生成</button>
+            </div>
+          </form>
+
+          <div class="video-progress-area" id="videoProgressArea" hidden>
+            <div class="progress-step" id="videoProgressStep"></div>
+            <div class="video-result" id="videoResult" hidden>
+              ✅ 视频生成成功！
+              <a class="btn btn-primary" id="downloadBtn" href="#">下载视频</a>
+              <button class="btn btn-primary" id="watchVideoBtn">观看视频</button>
+              <button class="btn btn-primary" id="shareVideoBtn">🔗 分享</button>
+            </div>
+            <div class="video-warnings" id="videoWarnings" hidden></div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- 预览弹窗 -->
+  <div class="modal modal-fullscreen" id="previewModal" hidden>
+    <div class="modal-content">
+      <div class="modal-header">
+        <span id="previewTitle"></span>
+        <button class="btn-close" id="previewCloseBtn">×</button>
+      </div>
+      <div class="preview-body">
+        <button id="preview-prev-btn" class="preview-nav-btn" title="上一张">◀</button>
+        <iframe id="previewFrame" class="preview-frame"></iframe>
+        <button id="preview-next-btn" class="preview-nav-btn" title="下一张">▶</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 视频播放弹窗 -->
+  <div class="modal modal-fullscreen" id="videoPlayerModal" hidden>
+    <div class="modal-content">
+      <div class="modal-header">
+        <span>🎬 视频播放</span>
+        <button class="btn-close" id="videoPlayerCloseBtn">×</button>
+      </div>
+      <video id="videoPlayer" controls class="video-player"></video>
+    </div>
+  </div>
+
+  <!-- 分享视频弹窗 -->
+  <div class="modal" id="shareModal" hidden>
+    <div class="modal-content modal-content-small">
+      <div class="modal-header">
+        <span>🔗 分享视频</span>
+        <button class="btn-close" id="shareCloseBtn">×</button>
+      </div>
+      <div class="modal-body">
+        <label class="form-label" for="shareCodeInput">分享数字（全站唯一）</label>
+        <input type="text" id="shareCodeInput" placeholder="请输入数字，如 123" class="modal-input" inputmode="numeric" />
+        <div class="share-hint">数字全站唯一；再次分享可修改，旧数字自动释放。</div>
+        <div class="share-result" id="shareResult" hidden>
+          <label class="form-label">分享链接</label>
+          <div class="share-link-wrap">
+            <input type="text" id="shareUrlInput" class="modal-input" readonly />
+            <button class="btn btn-primary" id="shareCopyBtn">复制</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" id="shareCancelBtn">取消</button>
+        <button class="btn btn-primary" id="shareConfirmBtn">生成分享链接</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新建会话弹窗 -->
+  <div class="modal" id="newSessionModal" hidden>
+    <div class="modal-content modal-content-small">
+      <div class="modal-header">
+        <span>📝 新建会话</span>
+        <button class="btn-close" id="newSessionCloseBtn">×</button>
+      </div>
+      <div class="modal-body">
+        <label class="form-label" for="newSessionTitle">PPT 主题</label>
+        <input type="text" id="newSessionTitle" placeholder="请输入 PPT 主题" class="modal-input" />
+      </div>
+      <div class="modal-footer">
+        <button class="btn" id="newSessionCancelBtn">取消</button>
+        <button class="btn btn-primary" id="newSessionConfirmBtn">创建</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 通用弹窗：统一替换系统 alert/confirm -->
+  <div class="modal" id="dialogModal" hidden>
+    <div class="modal-content modal-content-small dialog-modal">
+      <div class="modal-header">
+        <span class="dialog-title">提示</span>
+        <button class="btn-close dialog-close-btn" id="dialogCloseBtn" title="关闭">×</button>
+      </div>
+      <div class="modal-body dialog-body">
+        <div class="dialog-icon">ⓘ</div>
+        <div class="dialog-message"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn dialog-cancel-btn" id="dialogCancelBtn">取消</button>
+        <button class="btn btn-primary dialog-ok-btn" id="dialogOkBtn">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 播放模式 -->
+  <div class="modal modal-player" id="playerModal" hidden>
+    <div class="player-hover-zone" id="playerHoverZone">
+      <button class="player-exit-btn" id="playerExitBtn">✕</button>
+    </div>
+    <div class="pen-hover-zone" id="penHoverZone">
+      <div class="pen-toolbar" id="penToolbar">
+        <button class="pen-btn pen-toggle-full" id="penToggle">荧光笔</button>
+        <div class="pen-colors" id="penColors">
+          <span class="pen-color active" data-color="yellow" style="background:#f1c40f"></span>
+          <span class="pen-color" data-color="red" style="background:#e74c3c"></span>
+          <span class="pen-color" data-color="blue" style="background:#3498db"></span>
+          <span class="pen-color" data-color="green" style="background:#2ecc71"></span>
+          <span class="pen-color" data-color="black" style="background:#000;border:1px solid #555"></span>
+          <span class="pen-color" data-color="white" style="background:#fff;border:1px solid #555"></span>
+        </div>
+        <div class="pen-widths" id="penWidths">
+          <span class="pen-width" data-width="4" title="细"></span>
+          <span class="pen-width active" data-width="12" title="中"></span>
+          <span class="pen-width" data-width="20" title="粗"></span>
+        </div>
+        <button class="pen-btn" id="penClearPage">清除当前</button>
+        <button class="pen-btn" id="penClearAll">全部清除</button>
+        <button class="pen-btn" id="penUndo">撤销</button>
+      </div>
+    </div>
+    <iframe id="playerFrame" class="player-frame"></iframe>
+  </div>
+
+  <!-- 幻灯片画廊弹窗 -->
+  <div class="modal modal-fullscreen" id="galleryModal" hidden>
+    <div class="modal-content">
+      <div class="modal-header">
+        <span>🖼️ 全部幻灯片</span>
+        <button class="btn-close" id="galleryCloseBtn">×</button>
+      </div>
+      <div class="gallery-grid" id="galleryGrid"></div>
+      <div class="gallery-footer">
+        <button class="btn package-download-btn" id="packageDownloadBtn">📦 下载整套 PPT</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 高级视频生成弹窗 -->
+  <div class="modal modal-fullscreen" id="advancedModal" hidden>
+    <div class="modal-content">
+      <div class="modal-header">
+        <span>⚙ 高级视频生成</span>
+        <button class="btn-close" id="advancedCloseBtn">×</button>
+      </div>
+      <div class="video-warnings" id="advancedWarnings" hidden></div>
+      <div class="advanced-select-bar">
+        <label class="advanced-select-all">
+          <input type="checkbox" id="advancedSelectAll" /> 全选
+        </label>
+        <span class="advanced-select-count" id="advancedSelectCount">已选 0 张</span>
+      </div>
+      <div class="gallery-grid" id="advancedGrid"></div>
+      <div class="advanced-footer">
+        <button class="btn btn-primary" id="advancedConcatBtn">🎬 合成视频</button>
+        <button class="btn btn-history" id="advancedHistoryBtn">📼 查看历史合成</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 历史合成弹窗 -->
+  <div class="modal" id="clipHistoryModal" hidden>
+    <div class="modal-content">
+      <div class="modal-header">
+        <span>📼 历史合成</span>
+        <button class="btn-close" id="clipHistoryCloseBtn">×</button>
+      </div>
+      <div class="clip-history-body">
+        <table class="video-clips-table">
+          <thead>
+            <tr>
+              <th>合成来源</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="videoClipsList"></tbody>
+        </table>
+        <div class="video-clips-empty" id="videoClipsEmpty">暂无片段，勾选幻灯片后点击「合成视频」生成</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 设置弹窗（左右布局：左导航 + 右内容） -->
+  <div class="modal modal-fullscreen" id="settingsModal" hidden>
+    <div class="modal-content settings-content">
+      <div class="modal-header">
+        <span>⚙ 设置</span>
+        <button class="btn-close" id="settingsCloseBtn">×</button>
+      </div>
+      <div class="settings-layout">
+        <!-- 左侧导航 -->
+        <nav class="settings-nav" id="settingsNav">
+          <div class="settings-nav-item active" data-pane="general">
+            <span class="settings-nav-icon">🏠</span>
+            <span class="settings-nav-text">通用</span>
+          </div>
+          <div class="settings-nav-item" data-pane="models">
+            <span class="settings-nav-icon">🧠</span>
+            <span class="settings-nav-text">模型管理</span>
+          </div>
+          <div class="settings-nav-item" data-pane="declaration" title="查看完整免责声明">
+            <span class="settings-nav-icon">📜</span>
+            <span class="settings-nav-text">免责声明</span>
+          </div>
+        </nav>
+        <!-- 右侧内容 -->
+        <div class="settings-panes">
+          <!-- 通用面板（占位） -->
+          <div class="settings-pane active" data-pane="general">
+            <div class="settings-pane-header">
+              <h3>通用</h3>
+              <p class="settings-pane-desc">系统基础配置，后续开放更多选项。</p>
+            </div>
+            <div class="settings-empty">🚧 敬请期待</div>
+          </div>
+          <!-- 模型管理面板 -->
+          <div class="settings-pane" data-pane="models">
+            <div class="settings-pane-header">
+              <h3>模型管理</h3>
+              <p class="settings-pane-desc">维护可用的大模型配置，切换聊天中使用的模型。</p>
+            </div>
+            <div class="settings-toolbar">
+              <button class="btn btn-primary" id="addModelBtn">+ 新增模型</button>
+            </div>
+            <div class="settings-body">
+              <table class="settings-table" id="modelTable">
+                <thead>
+                  <tr>
+                    <th>名称</th>
+                    <th>提供商</th>
+                    <th>模型名称</th>
+                    <th>base_url</th>
+                    <th>默认</th>
+                    <th>启用</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="modelTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 关于弹窗 -->
+  <div class="modal" id="aboutModal" hidden>
+    <div class="modal-content modal-content-small about-content">
+      <div class="modal-header">
+        <span>ℹ️ 关于</span>
+        <button class="btn-close" id="aboutCloseBtn">×</button>
+      </div>
+      <div class="about-body">
+        <div class="about-hero">
+          <div class="about-logo">🎬</div>
+          <div class="about-title">驭帧(FrameDriver)</div>
+          <div class="about-slogan">驭帧让每一帧知识，都尽在掌控</div>
+        </div>
+        <div class="about-section">
+          <div class="about-label">项目介绍</div>
+          <div class="about-value about-intro"><span class="about-placeholder">驭帧一个「内容 → PPT → 视频」的全流程自动化平台：由 AI 智能体生成 PPT 内容与逐页幻灯片（HTML），再自动完成语音合成、字幕渲染与视频合成，输出成片。</span></div>
+
+        </div>
+        <div class="about-section">
+          <div class="about-label">项目信息</div>
+          <div class="about-value">
+            <div>项目名称：<span class="about-placeholder">framedriver-html2video</span></div>
+            <div>开源地址：<span class="about-placeholder">https://gitee.com/zhaoguangxi/framedriver-html2video.git</span></div>
+            <div>开源协议：<span class="about-placeholder">Apache License 2.0</span></div>
+            <div>版本：<span class="about-placeholder">v1.0.0</span></div>
+            <div>首次发布：<span class="about-placeholder">2026-08-11</span></div>
+            <div>最近更新：<span class="about-placeholder">2026-08-17</span></div>
+          </div>
+        </div>
+
+        <div class="about-section">
+          <div class="about-label">第三方依赖</div>
+          <div class="about-value"><span class="about-placeholder">项目依赖若干开源组件（MIT / Apache-2.0 / BSD / LGPL 等），完整清单及许可请查看项目 README 的「第三方依赖及许可」章节。</span></div>
+        </div>
+        <div class="about-section">
+          <div class="about-label">作者</div>
+          <div class="about-value">
+            <div>姓名：<span class="about-placeholder">赵广西</span></div>
+            <div>邮箱：<span class="about-placeholder">xige_aiagent_dev@163.com</span></div>
+            <div class="about-bio">简介：<span class="about-placeholder">赵广西架构师，十多年研发与架构设计经验；
+        AI Agent企业级平台从0到1实战落地经验；
+        国内较早一批AI Agent开发转型实践与布道者；
+        多个微服务架构师设计与研发落地经验；
+        多个saas系统架构设计与开发落地经验；
+        多个产品研发与团队建设从0到1落地经验；
+        提供AI Agent咨询/培训/开发服务。</span></div>
+          </div>
+        </div>
+        <div class="about-section">
+          <div class="about-label">相关链接</div>
+          <div class="about-value about-links">
+            <a href="/declaration.html" target="_blank" rel="noopener">免责声明</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 模型表单弹窗 -->
+  <div class="modal" id="modelFormModal" hidden>
+    <div class="modal-content">
+      <div class="modal-header">
+        <span id="modelFormTitle">新增模型</span>
+        <button class="btn-close" id="modelFormCloseBtn">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="modelForm" class="settings-form">
+          <input type="hidden" id="modelFormId" />
+          <div class="form-row">
+            <label>提供商 <input type="text" id="mf_model_provider" required placeholder="openai / anthropic" /></label>
+            <label>模型名称 <input type="text" id="mf_model_name" required placeholder="deepseek-chat" /></label>
+          </div>
+          <div class="form-row">
+            <label>名称 <input type="text" id="mf_name" required placeholder="展示名，默认=模型名称" /></label>
+            <label>base_url <input type="text" id="mf_base_url" placeholder="可空" /></label>
+          </div>
+          <div class="form-row">
+            <label>api_key <input type="password" id="mf_api_key" placeholder="编辑时留空=不修改" /></label>
+          </div>
+          <div class="form-row">
+            <label>temperature <input type="number" step="0.1" id="mf_temperature" placeholder="可空" /></label>
+            <label>max_tokens <input type="number" id="mf_max_tokens" placeholder="可空" /></label>
+          </div>
+          <div class="form-row form-row-checks">
+            <label><input type="checkbox" id="mf_is_default" /> 设为默认</label>
+            <label><input type="checkbox" id="mf_enabled" checked /> 启用</label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" id="modelFormCancelBtn">取消</button>
+        <button class="btn btn-primary" id="modelFormSaveBtn">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 删除确认弹窗 -->
+  <div class="modal" id="deleteConfirmModal" hidden>
+    <div class="modal-content modal-content-small">
+      <div class="modal-header">
+        <span>确认删除</span>
+        <button class="btn-close" id="deleteConfirmCloseBtn">×</button>
+      </div>
+      <div class="modal-body">
+        <p id="deleteConfirmText">确定删除此模型？</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" id="deleteConfirmCancelBtn">取消</button>
+        <button class="btn btn-primary" id="deleteConfirmOkBtn">确认删除</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/dialog.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/chat.js"></script>
+  <script src="/js/tabs.js"></script>
+  <script src="/js/video-settings.js"></script>
+  <script src="/js/settings.js"></script>
+</body>
+</html>

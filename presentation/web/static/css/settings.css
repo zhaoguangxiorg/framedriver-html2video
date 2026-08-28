@@ -1,0 +1,326 @@
+/* 设置页样式 - 左右布局（左导航 + 右内容面板） */
+
+/* 选项卡栏补充（display:flex 已在 tabs.css 定义，此处仅补充对齐与间距） */
+.tab-bar { align-items: center; gap: 4px; }
+
+/* 设置入口按钮（悬浮于主区右上角，首页/主界面均可见） */
+.settings-btn {
+  position: absolute;
+  top: 6px;
+  right: 16px;
+  z-index: 20;
+  background: transparent;
+  border: 1px solid #3a3a5c;
+  color: #fff;
+  font-size: 18px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.settings-btn:hover { background: #2a2a4e; }
+
+/* 关于按钮：悬浮在设置按钮左侧 */
+.about-btn {
+  right: 76px;
+}
+
+/* 关于弹窗 */
+.about-content {
+  width: 600px;
+  height: auto;
+  max-height: 85vh;
+}
+.about-body {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.about-hero {
+  text-align: center;
+  padding: 8px 0 14px;
+  border-bottom: 1px solid #2a2a4e;
+}
+.about-logo { font-size: 40px; }
+.about-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  margin-top: 6px;
+}
+.about-slogan {
+  font-size: 13px;
+  color: #9ca3af;
+  margin-top: 6px;
+}
+.about-intro {
+  line-height: 1.8;
+}
+.about-bio {
+  margin-top: 4px;
+  line-height: 1.8;
+}
+.about-section {
+  display: flex;
+  gap: 12px;
+}
+.about-label {
+  width: 70px;
+  flex-shrink: 0;
+  color: #9ca3af;
+  font-size: 13px;
+  padding-top: 2px;
+}
+.about-value {
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 1.7;
+  word-break: break-all;
+}
+.about-placeholder { color: #e8e8e8; }
+.about-links a {
+  color: #60a5fa;
+  text-decoration: none;
+  margin-right: 14px;
+}
+.about-links a:hover { text-decoration: underline; }
+
+/* 设置弹窗内容容器（全屏模态） */
+.settings-content {
+  width: 95vw;
+  max-width: none;
+  height: 90vh;
+  padding: 16px 20px;
+}
+.settings-content .modal-header {
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #2a2a4e;
+}
+
+/* 左右布局容器 */
+.settings-layout {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: 0;
+  border: 1px solid #2a2a4e;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* ===== 左侧导航 ===== */
+.settings-nav {
+  width: 200px;
+  flex-shrink: 0;
+  background: #16213e;
+  border-right: 1px solid #2a2a4e;
+  padding: 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+}
+.settings-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  color: #c7c7d8;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  font-size: 14px;
+  user-select: none;
+  transition: background 0.15s, color 0.15s;
+}
+.settings-nav-item:hover {
+  background: #1a2a4a;
+  color: #fff;
+}
+.settings-nav-item.active {
+  background: #0f3460;
+  color: #fff;
+  border-left-color: #4a9eff;
+  font-weight: 600;
+}
+.settings-nav-icon {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+}
+.settings-nav-text {
+  flex: 1;
+}
+
+/* ===== 右侧内容 ===== */
+.settings-panes {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  background: #1a1a2e;
+  padding: 20px 24px;
+  overflow: hidden;
+}
+
+/* 隐藏层方式：默认隐藏，.active 才显示，避免多面板堆叠导致滚动 */
+.settings-pane {
+  display: none;
+  height: 100%;
+  flex-direction: column;
+  min-height: 0;
+}
+.settings-pane.active {
+  display: flex;
+}
+.settings-pane-header {
+  margin-bottom: 16px;
+}
+.settings-pane-header h3 {
+  margin: 0 0 4px 0;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+}
+.settings-pane-desc {
+  margin: 0;
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+/* 可滚动主体：表格在 pane 内 */
+.settings-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* 表单弹窗与确认弹窗置于设置弹窗之上 */
+#modelFormModal,
+#deleteConfirmModal {
+  z-index: 1100;
+}
+
+/* 工具栏 */
+.settings-toolbar {
+  margin-bottom: 12px;
+}
+
+/* 模型表格 */
+.settings-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.settings-table thead th {
+  text-align: left;
+  padding: 10px 8px;
+  color: #9ca3af;
+  font-weight: 600;
+  border-bottom: 1px solid #3a3a5c;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  background: #1a1a2e;
+  z-index: 1;
+}
+.settings-table tbody td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #2a2a4e;
+  color: #fff;
+  vertical-align: middle;
+  word-break: break-all;
+}
+.settings-table tbody tr:hover {
+  background: #16213e;
+}
+.settings-table .col-actions {
+  white-space: nowrap;
+  text-align: right;
+}
+
+/* 表格内行操作按钮 */
+.settings-table .row-btn {
+  padding: 4px 10px;
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+/* 徽章 */
+.settings-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.settings-badge-default {
+  background: #0f3460;
+  border-color: #1a4a8a;
+  color: #fff;
+}
+.settings-badge-enabled {
+  background: #1b4332;
+  border-color: #2d6a4f;
+  color: #b7e4c7;
+}
+.settings-badge-disabled {
+  background: #4a1d1d;
+  border-color: #6b2c2c;
+  color: #f1aeb5;
+}
+.settings-badge-muted {
+  color: #9ca3af;
+}
+
+/* 模型表单 */
+.settings-form .form-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.settings-form .form-row label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: #e8e8e8;
+  font-size: 13px;
+}
+.settings-form .form-row-checks label {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.settings-form input[type="text"],
+.settings-form input[type="password"],
+.settings-form input[type="number"] {
+  padding: 8px 12px;
+  background: #16213e;
+  border: 1px solid #3a3a5c;
+  color: #fff;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  width: 100%;
+}
+.settings-form input:focus {
+  outline: none;
+  border-color: #0f3460;
+}
+.settings-form input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #0f3460;
+  cursor: pointer;
+}
+
+/* 空状态 */
+.settings-empty {
+  color: #9ca3af;
+  text-align: center;
+  padding: 32px 0;
+}

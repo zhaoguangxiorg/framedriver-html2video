@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>免责声明 - 驭帧(FrameDriver)</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --card: #222244;
+      --border: #3a3a5c;
+      --text: #ffffff;
+      --text-muted: #9ca3af;
+      --accent: #0f3460;
+      --accent-hover: #1a4a8a;
+      --section-num: #e94560;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Noto Sans SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+      line-height: 1.75;
+      padding: 32px 16px 64px;
+    }
+    .container { max-width: 860px; margin: 0 auto; }
+
+    /* 顶部 */
+    .page-header { text-align: center; padding: 24px 0 32px; }
+    .page-header h1 { font-size: 28px; letter-spacing: 1px; }
+    .page-header .sub { color: var(--text-muted); font-size: 13px; margin-top: 8px; }
+    .page-header .updated {
+      display: inline-block; margin-top: 12px; padding: 3px 12px;
+      border: 1px solid var(--border); border-radius: 999px;
+      color: var(--text-muted); font-size: 12px;
+    }
+
+    /* 目录 */
+    .toc {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px 20px; margin-bottom: 28px;
+    }
+    .toc-title { font-size: 14px; color: var(--text-muted); margin-bottom: 10px; }
+    .toc a {
+      color: #7fb3ff; text-decoration: none; font-size: 14px;
+      margin-right: 18px; line-height: 2;
+    }
+    .toc a:hover { text-decoration: underline; }
+
+    /* 板块卡片 */
+    section.card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 22px 26px; margin-bottom: 20px;
+    }
+    section.card h2 { font-size: 18px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+    section.card h2 .num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0;
+      background: rgba(233, 69, 96, 0.15); color: var(--section-num);
+      font-size: 14px; font-weight: 600;
+    }
+    section.card p { margin-bottom: 8px; font-size: 14.5px; color: #e5e7eb; }
+    section.card p b { color: var(--text); }
+    section.card ul { padding-left: 22px; margin-bottom: 8px; }
+    section.card li { font-size: 14.5px; color: #e5e7eb; margin-bottom: 4px; }
+    section.card .notice {
+      margin-top: 10px; padding: 10px 14px; border-left: 3px solid var(--section-num);
+      background: rgba(233, 69, 96, 0.08); border-radius: 0 8px 8px 0;
+      font-size: 13.5px; color: var(--text-muted);
+    }
+    section.card .data-table {
+      width: 100%; margin: 12px 0; border-collapse: collapse;
+      font-size: 13.5px;
+    }
+    section.card .data-table th,
+    section.card .data-table td {
+      padding: 9px 12px; text-align: left;
+      border: 1px solid var(--border); color: #e5e7eb;
+      vertical-align: top; line-height: 1.6;
+    }
+    section.card .data-table th {
+      background: rgba(255, 255, 255, 0.04); color: var(--text); font-weight: 600;
+    }
+
+    /* 底部 */
+    .page-footer { text-align: center; margin-top: 36px; }
+    .page-footer a {
+      display: inline-block; color: #7fb3ff; text-decoration: none;
+      font-size: 14px; border: 1px solid var(--border);
+      padding: 8px 22px; border-radius: 8px; transition: background 0.2s;
+    }
+    .page-footer a:hover { background: var(--card); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="page-header">
+      <h1>📜 免责声明</h1>
+      <p class="sub">本声明适用于「驭帧(FrameDriver)」PPT 视频生成平台。使用本平台即表示您已知悉并同意以下内容。</p>
+      <span class="updated">更新日期：2026-08-19</span>
+    </header>
+
+    <!-- 目录 -->
+    <nav class="toc">
+      <div class="toc-title">目录</div>
+      <a href="#s1">一、语音合成声明</a>
+      <a href="#s2">二、大模型生成内容声明</a>
+      <a href="#s3">三、用户内容责任声明</a>
+      <a href="#s4">四、知识产权归属声明</a>
+      <a href="#s5">五、视频/图像生成声明</a>
+      <a href="#s6">六、字体声明</a>
+      <a href="#s7">七、第三方服务与数据传递说明</a>
+      <a href="#s8">八、通用责任声明</a>
+    </nav>
+
+    <section class="card" id="s1">
+      <h2><span class="num">一</span>语音合成声明</h2>
+      <p>本平台视频语音合成默认通过 <b>edge-tts</b> 调用微软 Edge 浏览器的在线语音合成服务（<b>非官方接口，无需 API Key</b>）。该服务仅供<b>个人学习、内部测试与非商业用途</b>，微软未授权将其用于商业或生产环境，且不提供任何服务保障。</p>
+    </section>
+
+    <section class="card" id="s2">
+      <h2><span class="num">二</span>大模型生成内容声明</h2>
+      <p>本平台生成的内容（包括但不限于 PPT 文案、演讲稿、字幕等）由大语言模型自动生成，<b>仅供参考</b>。生成内容可能存在不准确、过时或与事实不符的情况，使用前请自行核实并人工审核，平台不对生成内容的准确性、完整性与合规性负责。</p>
+      <p>此外，如生成内容包含或引用第三方资源（包括但不限于字体、图片、图标等），若此类资源涉及版权或收费授权，由使用者自行核实与处理，与本平台无关，本平台及其作者均不承担任何责任。</p>
+
+    </section>
+
+    <section class="card" id="s3">
+      <h2><span class="num">三</span>用户内容责任声明</h2>
+      <p>本平台提供内容生成工具，<b>所有生成内容（包括但不限于 PPT、演讲稿、字幕、音频、视频等）均由使用者自主发起并全权负责</b>。使用者应对生成内容的<b>合法性、合规性及使用目的</b>承担全部责任。</p>
+      <p>使用者<b>不得</b>利用本平台生成、传播或用于任何违反法律法规、侵犯他人合法权益或违背公序良俗的内容，包括但不限于：违法信息、侵权内容（含抄袭、盗用他人版权素材）、色情低俗、暴力恐怖、欺诈诽谤、危害国家安全等内容。</p>
+      <p>本平台及其作者<b>不对使用者生成内容的内容性质、传播后果承担任何责任</b>；如因使用者生成或使用的内容引发任何纠纷、投诉或法律责任（包括第三方索赔），均由使用者自行承担。如因使用者内容导致平台或其作者受损，平台有权向使用者追偿。</p>
+    </section>
+
+    <section class="card" id="s4">
+      <h2><span class="num">四</span>知识产权归属声明</h2>
+      <p>本平台软件及其相关源码、文档、界面设计等知识产权的<b>所有权归平台开发方所有</b>。使用者利用本平台<b>生成的内容（包括但不限于 PPT、演讲稿、字幕、音频、视频等）归使用者所有</b>，使用者可自由将其用于合法商业或非商业用途。</p>
+    </section>
+
+    <section class="card" id="s5">
+      <h2><span class="num">五</span>视频/图像生成声明</h2>
+      <p>视频与图像由第三方服务或本地工具合成，合成效果可能受系统环境、依赖版本、网络状况等因素影响。平台<b>不保证合成结果的质量、可用性与一致性</b>。</p>
+    </section>
+
+    <section class="card" id="s6">
+      <h2><span class="num">六</span>字体声明</h2>
+      <p>字幕渲染使用<b>本平台运行服务器系统默认字体</b>。涉及商用字体（如微软雅黑等）受版权保护，若用于商业或分发场景，请自行确认所用字体的授权范围；因字体授权问题产生的责任由使用者自行承担，与平台开发方无关，本平台及其作者均不承担任何责任</p>
+    </section>
+
+    <section class="card" id="s7">
+      <h2><span class="num">七</span>第三方服务与数据传递说明</h2>
+      <p>本平台为<b>本地部署</b>软件，你的对话内容与生成产物默认存储于<b>你自己的服务器</b>。但部分功能依赖<b>第三方在线服务</b>完成，涉及以下数据传递：</p>
+      <table class="data-table">
+        <thead>
+          <tr><th>功能</th><th>传递内容</th><th>接收方</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>语音合成</td>
+            <td>每页幻灯片的<b>演讲词文本</b></td>
+            <td>微软 Edge 在线语音合成服务（edge-tts）</td>
+          </tr>
+          <tr>
+            <td>AI 内容生成</td>
+            <td><b>对话消息、生成提示词及上下文</b>（含 PPT 内容生成与幻灯片设计两个环节）</td>
+            <td>你所配置的大模型服务商（如 OpenAI、Anthropic、DeepSeek 等）</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="notice">上述数据在传递过程中受<b>第三方自身服务条款与隐私政策</b>约束，本平台无法控制其存储、使用与处理方式。详细需使用者自己咨询第三方自身服务条款与隐私政策</p>
+      <p><b>插件依赖声明：</b>本平台依赖若干第三方开源组件与插件（如大模型 SDK、语音合成库等）。这些组件由各自的开源社区或厂商维护，其<b>内部实现与潜在行为（包括但不限于版本更新、内置遥测、附加网络请求等）不在本平台可控范围内</b>。本平台不对第三方组件的内部行为作任何保证，也不对其可能产生的数据外传承担法律责任；因第三方组件引发的数据安全问题，请以对应组件的开源协议与官方说明为准，与平台开发方无关，本平台及其作者均不承担任何责任。</p>
+      <p><b>通用说明：</b>以上为本平台当前已知的第三方数据传递场景。除上述情形外，随着功能更新或新服务接入，上述场景可能变化，请以最新版本为准；你应自行判断所使用服务商的数据政策是否可接受，并避免输入个人敏感信息或商业秘密。</p>
+    </section>
+
+    <section class="card" id="s8">
+      <h2><span class="num">八</span>通用责任声明</h2>
+      <p>平台仅提供软件整合，<b>不提供、也不保证任何第三方服务</b>（语音合成、大模型、视频生成等）的可用性与合法性。</p>
+      <ul>
+        <li>因未合规配置或使用第三方服务所产生的法律责任与经济损失，均由使用者自行承担，与平台开发方无关，本平台及其作者均不承担任何责任；</li>
+        <li>使用者应以合规方式部署与使用本平台，并自行遵守所适用地区的法律法规；</li>
+        <li>本平台由 AI 辅助编程生成，代码可能存在未被发现的潜在缺陷。因系统运行不准确、程序错误或故障（包括但不限于任务中断、生成内容错误、数据丢失等）所导致的任何直接或间接损失与风险责任由使用者自行承担，与平台开发方无关，本平台及其作者均不承担任何责任。</li>
+        <li>除本声明明确约定的情形外，任何本声明未涉及或未预见的事项（包括但不限于第三方服务变更、功能调整等未尽事宜），均与本平台无关，本平台及其作者均不承担任何责任。</li>
+      </ul>
+      <div class="notice">注：以上声明将随平台功能更新同步调整，请以最新版本为准。使用本平台即表示您已阅读并同意以上声明内容。</div>
+    </section>
+
+    <footer class="page-footer">
+      <a href="/">← 返回平台首页</a>
+    </footer>
+  </div>
+</body>
+</html>

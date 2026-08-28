@@ -1,0 +1,69 @@
+/* 全局样式 */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: "Noto Sans SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+  background: #1a1a2e;
+  color: #ffffff;
+  font-size: 14px;
+}
+input, select, option, textarea, button { font-family: inherit; }
+.app { display: flex; height: 100vh; }
+
+/* 通用按钮 */
+.btn {
+  display: inline-block;
+  padding: 8px 16px;
+  background: transparent;
+  color: #ffffff;
+  border: 1px solid #3a3a5c;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s, border-color 0.2s;
+}
+.btn:hover { background: #2a2a4e; }
+.btn-primary { background: #0f3460; border-color: #0f3460; }
+.btn-primary:hover { background: #1a4a8a; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-close { background: transparent; border: none; color: #fff; font-size: 24px; cursor: pointer; }
+
+/* 主区 */
+.main { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; }
+.tab-content { flex: 1; overflow: auto; padding: 20px; }
+.tab-pane { display: none; }
+.tab-pane-active { display: flex; flex-direction: column; height: 100%; position: relative; }
+.empty-hint { color: #9ca3af; padding: 20px; text-align: center; }
+
+/* 首页：未选中会话时显示 */
+.home-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+}
+.home-slogan {
+  font-size: 26px;
+  font-weight: 600;
+  color: #e5e7eb;
+  letter-spacing: 3px;
+}
+.home-new-btn {
+  padding: 12px 40px;
+  font-size: 16px;
+  border-radius: 8px;
+}
+/* hidden 属性会被 display:flex 覆盖，需显式声明使其生效（首页/选项卡切换依赖） */
+.home-page[hidden],
+.tab-bar[hidden],
+.tab-content[hidden] {
+  display: none;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .app { flex-direction: column; }
+  .sidebar { width: 100%; height: 200px; }
+}

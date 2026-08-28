@@ -1,0 +1,20 @@
+/* 进度条样式 */
+.progress-bar-wrap { margin-top: 8px; }
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #2a2a4e;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #0f3460, #3742fa);
+  width: 0;
+  transition: width 0.3s ease-out;
+}
+.progress-step {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #9ca3af;
+}

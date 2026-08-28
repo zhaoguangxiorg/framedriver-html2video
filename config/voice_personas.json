@@ -1,0 +1,44 @@
+{
+  "default": {
+    "name": "默认女声",
+    "voice": "zh-CN-XiaoxiaoNeural",
+    "voice_rate": "+0%",
+    "voice_volume": "+0%",
+    "voice_pitch": "+0Hz"
+  },
+  "calm_male": {
+    "name": "沉稳男声",
+    "voice": "zh-CN-YunxiNeural",
+    "voice_rate": "-10%",
+    "voice_volume": "+0%",
+    "voice_pitch": "-2Hz"
+  },
+  "gentle_female": {
+    "name": "温柔女声",
+    "voice": "zh-CN-XiaomoNeural",
+    "voice_rate": "-5%",
+    "voice_volume": "+0%",
+    "voice_pitch": "+2Hz"
+  },
+  "energetic_youth": {
+    "name": "活力少年",
+    "voice": "zh-CN-YunjianNeural",
+    "voice_rate": "+10%",
+    "voice_volume": "+10%",
+    "voice_pitch": "+5Hz"
+  },
+  "professional_male": {
+    "name": "专业男声",
+    "voice": "zh-CN-YunyangNeural",
+    "voice_rate": "-5%",
+    "voice_volume": "+0%",
+    "voice_pitch": "+0Hz"
+  },
+  "lively_girl": {
+    "name": "活泼女声",
+    "voice": "zh-CN-XiaoyiNeural",
+    "voice_rate": "+5%",
+    "voice_volume": "+5%",
+    "voice_pitch": "+3Hz"
+  }
+}

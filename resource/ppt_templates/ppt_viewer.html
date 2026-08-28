@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PPT 播放器</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: "Noto Sans SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    background: #1a1a2e;
+    color: #e0e0e0;
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  /* ===== App layout ===== */
+  .app {
+    display: flex;
+    height: 100vh;
+  }
+
+  /* ===== Sidebar ===== */
+  .sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: #16213e;
+    overflow-y: auto;
+    padding: 0 0 16px;
+    border-right: 1px solid #2a2a4e;
+  }
+
+  .sidebar-header {
+    padding: 18px 20px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #8888aa;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    border-bottom: 1px solid #2a2a4e;
+    position: sticky;
+    top: 0;
+    background: #16213e;
+    z-index: 1;
+  }
+
+  #navList {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 0;
+  }
+
+  .nav-item {
+    width: 200px;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #333;
+    font-size: 14px;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    user-select: none;
+    text-align: center;
+    padding: 12px;
+    gap: 8px;
+    background: #f5f5f5;
+  }
+
+  .nav-item:hover {
+    background: #eaeaea;
+    border-color: #bbb;
+  }
+
+  .nav-item.active {
+    background: #e8f0fe;
+    color: #1a1a1a;
+    border-color: #3498db;
+  }
+
+  .nav-item .nav-index {
+    color: #999;
+    font-size: 12px;
+  }
+
+  .nav-item.active .nav-index {
+    color: #3498db;
+  }
+
+  .nav-item .nav-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    line-height: 1.4;
+    word-break: break-all;
+  }
+
+  /* ===== Main area ===== */
+  .main {
+    flex: 1;
+    position: relative;
+    background: #0d0d1a;
+    overflow: hidden;
+    padding: 16px;
+  }
+
+  #previewFrame {
+    border: none;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+  }
+
+  /* ===== Player modal (fullscreen layer, identical to online player) ===== */
+  .player-modal {
+    display: none;
+  }
+
+  .player-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: #000;
+  }
+
+  /* ===== Fullscreen button ===== */
+  .fullscreen-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    padding: 8px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: background 0.15s, border-color 0.15s;
+  }
+
+  .fullscreen-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+
+  /* ===== Slide counter ===== */
+  .slide-counter {
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    color: #aaaacc;
+    font-size: 13px;
+    background: rgba(26, 26, 46, 0.7);
+    padding: 6px 16px;
+    border-radius: 20px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: none;
+  }
+
+  /* ===== Player hover zone (exit button, fullscreen mode) ===== */
+  .player-hover-zone {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    z-index: 10000;
+    display: none;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .player-hover-zone .player-exit-btn {
+    opacity: 0;
+    transition: opacity 0.2s;
+    background: rgba(231, 76, 60, 0.8);
+    color: #fff;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  .player-hover-zone:hover .player-exit-btn {
+    opacity: 1;
+  }
+
+  /* ===== Pen hover zone (right drawer, fullscreen mode) ===== */
+  .pen-hover-zone {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 130px;
+    z-index: 10001;
+    display: none;
+  }
+
+  .pen-toolbar {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 90px;
+    padding: 14px 8px;
+    background: rgba(26, 26, 46, 0.95);
+    border: 1px solid #2a2a4e;
+    border-radius: 8px 0 0 8px;
+    z-index: 10002;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  .pen-hover-zone:hover .pen-toolbar {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .pen-btn {
+    background: #2a2a4e;
+    color: #ccc;
+    border: 1px solid #3a3a6e;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    white-space: nowrap;
+    width: 100%;
+    text-align: center;
+    transition: background 0.15s;
+  }
+
+  .pen-btn:hover { background: #3a3a6e; }
+
+  .pen-toggle-full { font-weight: 600; }
+
+  .pen-toggle-full.active {
+    background: #27ae60;
+    color: #fff;
+    border-color: #27ae60;
+  }
+
+  .pen-colors {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 2px 0;
+  }
+
+  .pen-color {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.15s;
+  }
+
+  .pen-color.active { border-color: #fff; }
+  .pen-color:hover { border-color: #ccc; }
+
+  .pen-widths {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 0;
+  }
+
+  .pen-width {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 3px;
+    position: relative;
+    transition: border-color 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .pen-width::after {
+    content: "";
+    display: block;
+    background: #ccc;
+    border-radius: 2px;
+  }
+
+  .pen-width[data-width="4"]::after  { width: 16px; height: 2px; }
+  .pen-width[data-width="12"]::after { width: 16px; height: 5px; }
+  .pen-width[data-width="20"]::after { width: 16px; height: 8px; }
+
+  .pen-width.active { border-color: #fff; }
+  .pen-width:hover { border-color: #ccc; }
+
+  /* ===== Fullscreen mode overrides ===== */
+  body.fullscreen .sidebar {
+    display: none;
+  }
+
+  body.fullscreen #previewFrame {
+    display: none;
+  }
+
+  body.fullscreen .fullscreen-btn,
+  body.fullscreen .slide-counter {
+    display: none;
+  }
+
+  body.fullscreen .player-modal {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #000;
+  }
+
+  body.fullscreen .player-hover-zone {
+    display: flex;
+  }
+
+  body.fullscreen .pen-hover-zone {
+    display: block;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">幻灯片</div>
+    <div id="navList"></div>
+  </aside>
+
+  <!-- Main area -->
+  <div class="main">
+    <!-- Normal mode: scale to fit sidebar viewport -->
+    <iframe id="previewFrame"></iframe>
+
+    <button class="fullscreen-btn" id="fullscreenBtn">&#9974; 全屏播放</button>
+    <div class="slide-counter" id="slideCounter">1 / 1</div>
+  </div>
+</div>
+
+<!-- Fullscreen mode: fixed overlay layer (direct child of body, same as online player) -->
+<div class="player-modal" id="playerModal">
+  <div class="player-hover-zone" id="playerHoverZone">
+    <button class="player-exit-btn" id="playerExitBtn">&#10005;</button>
+  </div>
+  <div class="pen-hover-zone" id="penHoverZone">
+    <div class="pen-toolbar" id="penToolbar">
+      <button class="pen-btn pen-toggle-full" id="penToggle">荧光笔</button>
+      <div class="pen-colors" id="penColors">
+        <span class="pen-color active" data-color="yellow" style="background:#f1c40f"></span>
+        <span class="pen-color" data-color="red" style="background:#e74c3c"></span>
+        <span class="pen-color" data-color="blue" style="background:#3498db"></span>
+        <span class="pen-color" data-color="green" style="background:#2ecc71"></span>
+        <span class="pen-color" data-color="black" style="background:#000;border:1px solid #555"></span>
+        <span class="pen-color" data-color="white" style="background:#fff;border:1px solid #555"></span>
+      </div>
+      <div class="pen-widths" id="penWidths">
+        <span class="pen-width" data-width="4" title="细"></span>
+        <span class="pen-width active" data-width="12" title="中"></span>
+        <span class="pen-width" data-width="20" title="粗"></span>
+      </div>
+      <button class="pen-btn" id="penClearPage">清除当前</button>
+      <button class="pen-btn" id="penClearAll">全部清除</button>
+      <button class="pen-btn" id="penUndo">撤销</button>
+    </div>
+  </div>
+  <iframe id="playerFrame" class="player-frame"></iframe>
+</div>
+
+<!-- Slide templates: backend inserts <script type="text/html" id="slide-N"> blocks below -->
+{slide_templates}
+
+<script>
+(function () {
+  "use strict";
+
+  // ===== Slide metadata (backend replaces {slides_json}) =====
+  var SLIDES = {slides_json};
+
+  // ===== Slide original size (backend replaces {slide_size}) =====
+  var SLIDE_SIZE = {slide_size};
+
+  var $ = function (s) { return document.querySelector(s); };
+
+  // ===== State =====
+  var _playerCurrent = 0;
+  var _penActive = false;
+  var _penColor = "yellow";
+  var _penWidth = 12;
+  var _isFullscreen = false;
+  var _PEN_COLORS = {
+    yellow: "rgba(241,196,15,0.35)",
+    red: "rgba(231,76,60,0.35)",
+    blue: "rgba(52,152,219,0.35)",
+    green: "rgba(46,204,113,0.35)",
+    black: "rgba(0,0,0,0.4)",
+    white: "rgba(255,255,255,0.45)"
+  };
+  // Strokes only live within a single fullscreen session — cleared on enter/exit
+  var _strokesMap = {};
+
+  // ===== Helpers =====
+  function _currentSlideIndex() {
+    var sl = SLIDES[_playerCurrent];
+    return sl ? sl.index : -1;
+  }
+
+  function _getSlideSrcdoc(i) {
+    var sl = SLIDES[i];
+    if (!sl) return "";
+    var tpl = document.getElementById("slide-" + sl.index);
+    return tpl ? tpl.textContent : "";
+  }
+
+  function _savePenStrokes() {
+    var idx = _currentSlideIndex();
+    if (idx < 0) return;
+    try {
+      var w = $("#playerFrame").contentWindow;
+      if (w && w.__penGetStrokes) {
+        _strokesMap[idx] = w.__penGetStrokes();
+      }
+    } catch (_) {}
+  }
+
+  function _callPen(method) {
+    try {
+      var w = $("#playerFrame").contentWindow;
+      if (w && w.__pen) { w.__pen(method); }
+    } catch (_) {}
+  }
+
+  // ===== Pen canvas injection — ONLY for #playerFrame (fullscreen iframe) =====
+  function _injectPenCanvas() {
+    try {
+      var frame = $("#playerFrame");
+      var win = frame.contentWindow;
+      var doc = frame.contentDocument;
+      if (!doc || !doc.body) return;
+
+      // Hide scrollbar
+      var style = doc.querySelector("#pen-scrollbar-style");
+      if (!style) {
+        style = doc.createElement("style");
+        style.id = "pen-scrollbar-style";
+        style.textContent = "html{scrollbar-width:none;-ms-overflow-style:none}html::-webkit-scrollbar{display:none}";
+        doc.head.appendChild(style);
+      }
+
+      // Remove old canvas
+      var old = doc.querySelector("#pen-canvas");
+      if (old) old.remove();
+
+      var canvas = doc.createElement("canvas");
+      canvas.id = "pen-canvas";
+      canvas.style.cssText = "position:absolute;top:0;left:0;z-index:9999;pointer-events:none;";
+      doc.body.appendChild(canvas);
+
+      var ctx = canvas.getContext("2d");
+      var PEN_COLOR = _PEN_COLORS[_penColor] || "rgba(241,196,15,0.35)";
+      var PEN_WIDTH = _penWidth || 12;
+      var isDrawing = false;
+      var strokes = [];
+      var curStroke = null;
+      var epsilon = 2;
+
+      function resize() {
+        canvas.width = doc.documentElement.scrollWidth || win.innerWidth;
+        canvas.height = doc.documentElement.scrollHeight || win.innerHeight;
+        canvas.style.width = canvas.width + "px";
+        canvas.style.height = canvas.height + "px";
+      }
+      resize();
+      win.addEventListener("resize", resize);
+
+      function redraw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        for (var i = 0; i < strokes.length; i++) {
+          var s = strokes[i];
+          var pts = s.points || s;
+          if (pts.length < 2) continue;
+          ctx.beginPath();
+          ctx.strokeStyle = s.color || PEN_COLOR;
+          ctx.lineWidth = s.width || PEN_WIDTH;
+          ctx.moveTo(pts[0].x, pts[0].y);
+          for (var j = 1; j < pts.length; j++) ctx.lineTo(pts[j].x, pts[j].y);
+          ctx.stroke();
+        }
+      }
+
+      win.__penGetStrokes = function () { return strokes; };
+      win.__pen = function (cmd) {
+        if (cmd === "enable") {
+          canvas.style.pointerEvents = "auto";
+        } else if (cmd === "disable") {
+          canvas.style.pointerEvents = "none";
+        } else if (cmd === "clear_page") {
+          strokes = [];
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        } else if (cmd === "undo") {
+          strokes.pop();
+          redraw();
+        } else if (cmd && cmd.indexOf("set_color:") === 0) {
+          var c = cmd.slice(10);
+          PEN_COLOR = _PEN_COLORS[c] || PEN_COLOR;
+        } else if (cmd && cmd.indexOf("set_width:") === 0) {
+          PEN_WIDTH = parseInt(cmd.slice(10), 10) || PEN_WIDTH;
+        } else if (cmd === "restore") {
+          var idx = _currentSlideIndex();
+          if (idx >= 0) {
+            strokes = _strokesMap[idx] || [];
+            redraw();
+          }
+        }
+      };
+
+      // Forward keydown from iframe to parent
+      win.addEventListener("keydown", function (e) {
+        if (e.key === "ArrowLeft") { e.preventDefault(); playerPrev(); }
+        else if (e.key === "ArrowRight") { e.preventDefault(); playerNext(); }
+        else if (e.key === "Escape") { e.preventDefault(); exitPlayer(); }
+        else if (e.key === "p" || e.key === "P") {
+          e.preventDefault();
+          togglePen();
+        } else if (e.key === "c" || e.key === "C") {
+          e.preventDefault();
+          clearCurrentPage();
+        }
+      });
+
+      // Mouse drawing
+      canvas.addEventListener("mousedown", function (e) {
+        if (!isDrawing) {
+          isDrawing = true;
+          var s = { points: [{ x: e.pageX, y: e.pageY }], color: PEN_COLOR, width: PEN_WIDTH };
+          strokes.push(s);
+          curStroke = s;
+        }
+      });
+      canvas.addEventListener("mousemove", function (e) {
+        if (!isDrawing) return;
+        var pts = curStroke.points;
+        var p = { x: e.pageX, y: e.pageY };
+        var last = pts[pts.length - 1];
+        var dx = p.x - last.x, dy = p.y - last.y;
+        if (dx * dx + dy * dy < epsilon * epsilon) return;
+        pts.push(p);
+        redraw();
+      });
+      canvas.addEventListener("mouseup", function () { isDrawing = false; _savePenStrokes(); });
+      canvas.addEventListener("mouseleave", function () { if (isDrawing) { isDrawing = false; _savePenStrokes(); } });
+
+      // Restore strokes for current slide
+      var idx = _currentSlideIndex();
+      if (idx >= 0 && _strokesMap[idx]) {
+        strokes = _strokesMap[idx];
+        redraw();
+      }
+      if (_penActive) { canvas.style.pointerEvents = "auto"; }
+    } catch (_) { /* ignore */ }
+  }
+
+  // ===== Fit previewFrame to container (NORMAL MODE ONLY) =====
+  // Fullscreen mode uses CSS: player-frame { width:100%; height:100% } — no scale needed.
+  function fitFrame() {
+    if (_isFullscreen) return; // Fullscreen: CSS 100%/100% handles it
+
+    var container = $(".main");
+    var style = getComputedStyle(container);
+    var cw = container.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+    var ch = container.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+    var sw = SLIDE_SIZE.width;
+    var sh = SLIDE_SIZE.height;
+
+    var ratio = Math.min(cw / sw, ch / sh);
+    var scaledW = sw * ratio;
+    var scaledH = sh * ratio;
+    var offsetX = (cw - scaledW) / 2;
+    var offsetY = (ch - scaledH) / 2;
+
+    var frame = $("#previewFrame");
+    frame.style.width = sw + "px";
+    frame.style.height = sh + "px";
+    frame.style.transformOrigin = "top left";
+    frame.style.transform = "translate(" + offsetX + "px," + offsetY + "px) scale(" + ratio + ")";
+  }
+
+  // ===== Fit playerFrame to screen (FULLSCREEN MODE ONLY) =====
+  // For 9:16 portrait slides on landscape screens, we need explicit scale
+  // to show the full slide without cropping (same as online player behavior).
+  function fitPlayerFrame() {
+    if (!_isFullscreen) return;
+
+    var cw = window.innerWidth;
+    var ch = window.innerHeight;
+    var sw = SLIDE_SIZE.width;
+    var sh = SLIDE_SIZE.height;
+
+    var ratio = Math.min(cw / sw, ch / sh);
+    var scaledW = sw * ratio;
+    var scaledH = sh * ratio;
+    var offsetX = (cw - scaledW) / 2;
+    var offsetY = (ch - scaledH) / 2;
+
+    var frame = $("#playerFrame");
+    frame.style.width = sw + "px";
+    frame.style.height = sh + "px";
+    frame.style.transformOrigin = "top left";
+    frame.style.transform = "translate(" + offsetX + "px," + offsetY + "px) scale(" + ratio + ")";
+  }
+
+  // ===== Slide navigation — syncs BOTH iframes =====
+  function showSlide(i) {
+    if (i < 0 || i >= SLIDES.length) return;
+    _savePenStrokes();
+    _playerCurrent = i;
+    var html = _getSlideSrcdoc(i);
+
+    // Always update previewFrame (normal mode)
+    $("#previewFrame").srcdoc = html;
+
+    // Update playerFrame if currently in fullscreen (or preload for fast switch)
+    if (_isFullscreen) {
+      var pf = $("#playerFrame");
+      pf.srcdoc = html;
+      pf.addEventListener("load", function onSlideLoad() {
+        pf.removeEventListener("load", onSlideLoad);
+        fitPlayerFrame();
+      });
+    }
+
+    updateNavActive();
+    updateCounter();
+  }
+
+  function playerPrev() {
+    if (_playerCurrent > 0) showSlide(_playerCurrent - 1);
+  }
+  function playerNext() {
+    if (_playerCurrent < SLIDES.length - 1) showSlide(_playerCurrent + 1);
+  }
+
+  // ===== Sidebar =====
+  function buildSidebar() {
+    var list = $("#navList");
+    list.innerHTML = "";
+    for (var i = 0; i < SLIDES.length; i++) {
+      (function (idx) {
+        var sl = SLIDES[idx];
+        var item = document.createElement("div");
+        item.className = "nav-item" + (idx === 0 ? " active" : "");
+        item.dataset.idx = idx;
+        var title = sl.title || ("第" + (idx + 1) + "页");
+        var spanIdx = document.createElement("span");
+        spanIdx.className = "nav-index";
+        spanIdx.textContent = (idx + 1);
+        var spanTitle = document.createElement("span");
+        spanTitle.className = "nav-title";
+        spanTitle.textContent = title;
+        item.appendChild(spanIdx);
+        item.appendChild(spanTitle);
+        item.addEventListener("click", function () { showSlide(idx); });
+        list.appendChild(item);
+      })(i);
+    }
+  }
+
+  function updateNavActive() {
+    var items = document.querySelectorAll(".nav-item");
+    for (var i = 0; i < items.length; i++) {
+      if (parseInt(items[i].dataset.idx, 10) === _playerCurrent) {
+        items[i].classList.add("active");
+      } else {
+        items[i].classList.remove("active");
+      }
+    }
+  }
+
+  function updateCounter() {
+    $("#slideCounter").textContent = (_playerCurrent + 1) + " / " + SLIDES.length;
+  }
+
+  // ===== Fullscreen mode =====
+  function enterFullscreen() {
+    // 1. Reset fullscreen-session strokes — user confirmed drawing is cleared on enter
+    _strokesMap = {};
+    _penActive = false;
+    _updatePenToggleUI();
+
+    // 2. CSS: show player-modal (fixed inset 0), hide sidebar + previewFrame
+    _isFullscreen = true;
+    document.body.classList.add("fullscreen");
+
+    // 3. Sync current slide into playerFrame
+    var frame = $("#playerFrame");
+    frame.srcdoc = _getSlideSrcdoc(_playerCurrent);
+    // After iframe loads, scale it to fit the screen (handles 9:16 portrait → landscape)
+    frame.addEventListener("load", function onFitLoad() {
+      frame.removeEventListener("load", onFitLoad);
+      fitPlayerFrame();
+    });
+
+    // 4. Try browser Fullscreen API — 对 #playerModal 全屏（和在线播放器一致）
+    var el = $("#playerModal");
+    if (el.requestFullscreen) {
+      el.requestFullscreen().catch(function () {});
+    } else if (el.webkitRequestFullscreen) {
+      el.webkitRequestFullscreen();
+    }
+  }
+
+  function exitPlayer() {
+    _savePenStrokes();
+    // 1. Clear all strokes — user confirmed drawing does not persist back to normal mode
+    _strokesMap = {};
+    _penActive = false;
+    _updatePenToggleUI();
+
+    // 2. CSS: return to normal mode layout
+    _isFullscreen = false;
+    document.body.classList.remove("fullscreen");
+
+    // 3. Clear playerFrame scale transform
+    var pf = $("#playerFrame");
+    pf.style.transform = "";
+    pf.style.width = "";
+    pf.style.height = "";
+
+    // 4. Exit browser Fullscreen API if active
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(function () {});
+    } else if (document.webkitFullscreenElement) {
+      document.webkitExitFullscreen();
+    }
+
+    // 5. Re-fit previewFrame after layout returns
+    fitFrame();
+  }
+
+  // ===== Pen toolbar actions =====
+  function _updatePenToggleUI() {
+    var btn = $("#penToggle");
+    if (_penActive) { btn.classList.add("active"); }
+    else { btn.classList.remove("active"); }
+  }
+
+  function togglePen() {
+    _penActive = !_penActive;
+    _updatePenToggleUI();
+    _callPen(_penActive ? "enable" : "disable");
+  }
+
+  function clearCurrentPage() {
+    var idx = _currentSlideIndex();
+    if (idx >= 0) { _strokesMap[idx] = []; }
+    _callPen("clear_page");
+  }
+
+  // ===== Init =====
+  function init() {
+    if (!SLIDES || !SLIDES.length) return;
+
+    buildSidebar();
+
+    // previewFrame load → fit for normal mode layout
+    $("#previewFrame").addEventListener("load", function () {
+      fitFrame();
+    });
+
+    // playerFrame load → inject pen canvas (fullscreen only)
+    $("#playerFrame").addEventListener("load", function () {
+      _injectPenCanvas();
+    });
+
+    // Initial slide — 从 URL ?slide=N 读取初始页（1-based），默认第 1 页
+    var _initialSlide = 0;
+    try {
+      var params = new URLSearchParams(window.location.search);
+      var s = parseInt(params.get("slide"), 10);
+      if (!isNaN(s) && s >= 1 && s <= SLIDES.length) {
+        _initialSlide = s - 1;
+      }
+    } catch (_) {}
+    setTimeout(function () {
+      showSlide(_initialSlide);
+      fitFrame();
+    }, 0);
+
+    // Fullscreen button
+    $("#fullscreenBtn").addEventListener("click", enterFullscreen);
+
+    // Exit button (top hover zone)
+    $("#playerExitBtn").addEventListener("click", exitPlayer);
+
+    // Pen toggle
+    $("#penToggle").addEventListener("click", togglePen);
+
+    // Color picker
+    var colorEls = document.querySelectorAll("#penColors .pen-color");
+    for (var i = 0; i < colorEls.length; i++) {
+      (function (el) {
+        el.addEventListener("click", function () {
+          for (var j = 0; j < colorEls.length; j++) colorEls[j].classList.remove("active");
+          el.classList.add("active");
+          _penColor = el.dataset.color;
+          _callPen("set_color:" + _penColor);
+        });
+      })(colorEls[i]);
+    }
+
+    // Width picker
+    var widthEls = document.querySelectorAll("#penWidths .pen-width");
+    for (var k = 0; k < widthEls.length; k++) {
+      (function (el) {
+        el.addEventListener("click", function () {
+          for (var j = 0; j < widthEls.length; j++) widthEls[j].classList.remove("active");
+          el.classList.add("active");
+          _penWidth = parseInt(el.dataset.width, 10);
+          _callPen("set_width:" + _penWidth);
+        });
+      })(widthEls[k]);
+    }
+
+    // Clear page
+    $("#penClearPage").addEventListener("click", clearCurrentPage);
+
+    // Clear all
+    $("#penClearAll").addEventListener("click", function () {
+      _strokesMap = {};
+      _callPen("clear_page");
+    });
+
+    // Undo
+    $("#penUndo").addEventListener("click", function () {
+      var idx = _currentSlideIndex();
+      if (idx >= 0 && _strokesMap[idx] && _strokesMap[idx].length > 0) {
+        _strokesMap[idx].pop();
+        _callPen("undo");
+      }
+    });
+
+    // Keyboard controls (parent window)
+    window.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowLeft" && _isFullscreen) { e.preventDefault(); playerPrev(); }
+      else if (e.key === "ArrowRight" && _isFullscreen) { e.preventDefault(); playerNext(); }
+      else if (e.key === "Escape" && _isFullscreen) { e.preventDefault(); exitPlayer(); }
+      else if ((e.key === "p" || e.key === "P") && _isFullscreen) {
+        e.preventDefault();
+        togglePen();
+      } else if ((e.key === "c" || e.key === "C") && _isFullscreen) {
+        e.preventDefault();
+        clearCurrentPage();
+      }
+    });
+
+    // Fullscreen API change event — sync CSS state when user exits via browser
+    document.addEventListener("fullscreenchange", function () {
+      if (!document.fullscreenElement && _isFullscreen) {
+        exitPlayer();
+      }
+    });
+    document.addEventListener("webkitfullscreenchange", function () {
+      if (!document.webkitFullscreenElement && _isFullscreen) {
+        exitPlayer();
+      }
+    });
+
+    // Window resize → normal mode refit previewFrame, fullscreen refit playerFrame
+    window.addEventListener("resize", function () {
+      if (_isFullscreen) {
+        fitPlayerFrame();
+      } else {
+        fitFrame();
+      }
+    });
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
