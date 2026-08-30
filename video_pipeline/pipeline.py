@@ -58,7 +58,13 @@ def run_pipeline(
         segment_path = str(slide_dir / "segment.mp4")
 
         html_path = slide.get("html_path")
-        if not html_path:
+        if html_path:
+            # 有值：若为相对路径则拼上项目目录；绝对路径则直接用
+            _p = Path(html_path)
+            if not _p.is_absolute():
+                html_path = str(project_path / _p)
+        else:
+            # 无值：默认项目目录下 slide_XX/slide.html
             html_path = str(slide_dir / "slide.html")
 
         _pid = Path(project_dir).name

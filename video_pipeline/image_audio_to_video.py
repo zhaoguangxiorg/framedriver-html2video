@@ -2,6 +2,7 @@
 # Modified: 2026-08-11
 
 import os
+import re
 import subprocess
 import tempfile
 from pathlib import Path
@@ -14,30 +15,27 @@ from video_pipeline.subtitle_render import build_subtitle_filters
 try:
     import imageio_ffmpeg
     _FFMPEG_PATH = imageio_ffmpeg.get_ffmpeg_exe()
-    _FFPROBE_PATH = str(Path(_FFMPEG_PATH).parent / "ffprobe.exe")
-    if not Path(_FFPROBE_PATH).exists():
-        _FFPROBE_PATH = _FFMPEG_PATH
 except ImportError:
     _FFMPEG_PATH = "ffmpeg"
-    _FFPROBE_PATH = "ffprobe"
 
 
 def _get_audio_duration(audio_path: str) -> float:
+    """使用 ffmpeg -i 解析音频时长（无需 ffprobe，环境内 ffmpeg 可直接读取文件头）。"""
     try:
         result = subprocess.run(
-            [
-                _FFPROBE_PATH,
-                "-v", "error",
-                "-show_entries", "format=duration",
-                "-of", "default=noprint_wrappers=1:nokey=1",
-                audio_path,
-            ],
+            [_FFMPEG_PATH, "-i", str(audio_path)],
             capture_output=True,
             text=True,
             timeout=30,
         )
-        if result.returncode == 0:
-            return float(result.stdout.strip())
+        # ffmpeg -i 将 "Duration: HH:MM:SS.cc" 打印到 stderr
+        match = re.search(r"Duration:\s*(\d+):(\d{2}):(\d{2}(?:\.\d+)?)", result.stderr)
+        if match:
+            return (
+                int(match.group(1)) * 3600
+                + int(match.group(2)) * 60
+                + float(match.group(3))
+            )
     except (FileNotFoundError, subprocess.TimeoutExpired, ValueError):
         pass
     return 0.0
@@ -198,6 +196,10 @@ def image_audio_to_video(
         "-pix_fmt", "yuv420p",
         "-c:a", "aac",
         "-b:a", "192k",
+        # 视频源是无限循环图片，-shortest 无法把画面精确截到音频长度，
+        # 会留下约1.5秒画面尾巴，导致合成后音频与烧录字幕错位。
+        # 用 -t 按真实音频时长直接限定输出，保证每段视频时长=音频时长。
+        "-t", f"{duration:.3f}",
         "-shortest",
         str(output),
     ])

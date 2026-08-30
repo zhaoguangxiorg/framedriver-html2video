@@ -2,6 +2,7 @@
 # Modified: 2026-08-11
 
 import asyncio
+import re
 import subprocess
 import time
 from pathlib import Path
@@ -11,30 +12,28 @@ from video_pipeline.config import VideoConfig
 
 try:
     import imageio_ffmpeg
-    _FFPROBE_PATH = str(Path(imageio_ffmpeg.get_ffmpeg_exe()).parent / "ffprobe.exe")
-    if not Path(_FFPROBE_PATH).exists():
-        _FFPROBE_PATH = imageio_ffmpeg.get_ffmpeg_exe()
+    _FFMPEG_PATH = imageio_ffmpeg.get_ffmpeg_exe()
 except ImportError:
-    _FFPROBE_PATH = "ffprobe"
+    _FFMPEG_PATH = "ffmpeg"
 
 
-def _get_audio_duration_ffprobe(audio_path: str) -> float:
-    """使用 ffprobe 获取音频时长。"""
+def _get_audio_duration(audio_path: str) -> float:
+    """使用 ffmpeg -i 解析音频时长（无需 ffprobe，环境内 ffmpeg 可直接读取文件头）。"""
     try:
         result = subprocess.run(
-            [
-                _FFPROBE_PATH,
-                "-v", "error",
-                "-show_entries", "format=duration",
-                "-of", "default=noprint_wrappers=1:nokey=1",
-                audio_path,
-            ],
+            [_FFMPEG_PATH, "-i", str(audio_path)],
             capture_output=True,
             text=True,
             timeout=30,
         )
-        if result.returncode == 0:
-            return float(result.stdout.strip())
+        # ffmpeg -i 将 "Duration: HH:MM:SS.cc" 打印到 stderr
+        match = re.search(r"Duration:\s*(\d+):(\d{2}):(\d{2}(?:\.\d+)?)", result.stderr)
+        if match:
+            return (
+                int(match.group(1)) * 3600
+                + int(match.group(2)) * 60
+                + float(match.group(3))
+            )
     except (FileNotFoundError, subprocess.TimeoutExpired, ValueError):
         pass
     return 0.0
@@ -90,7 +89,7 @@ def text_to_speech(
             else:
                 raise RuntimeError(f"TTS synthesis failed after {max_retries} attempts: {e}") from last_error
 
-    duration = _get_audio_duration_ffprobe(str(output_path))
+    duration = _get_audio_duration(str(output_path))
     if duration <= 0:
         duration = _estimate_duration(text)
 
